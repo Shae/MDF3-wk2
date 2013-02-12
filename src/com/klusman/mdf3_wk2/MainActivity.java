@@ -10,6 +10,8 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -18,41 +20,64 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements SensorEventListener {
+public class MainActivity extends Activity implements SensorEventListener{
 	MediaPlayer mp;
 	Button AudioBtn;
+	Button StopBtn;
 	private SensorManager sensorManager;
 	private Sensor proximitySensor;
-	//private TextView distance;
+	ImageView iv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
         requestWindowFeature(Window.FEATURE_NO_TITLE);
       	getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+      	setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+      	//iv.setVisibility(View.INVISIBLE);
         setContentView(R.layout.activity_main);
         
         mp = MediaPlayer.create(MainActivity.this, R.raw.handlebars);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         sensorReg();
+        
         AudioBtn = (Button) findViewById(R.id.audioBtn);
+        AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
+
+        
         AudioBtn.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				if(AudioBtn.getText().toString().compareTo("Play Audio") == 0){
-					AudioBtn.setText("Stop Audio");
+					AudioBtn.setText("Pause Audio");
+					//iv.setVisibility(View.VISIBLE);
+					//Resources res = getResources(); /** from an Activity */
+					//iv.setImageDrawable(res.getDrawable(R.drawable.album_art));
+					//iv.setImageResource(R.drawable.album_art);
 					mp.start();
-
-						
+					AudioBtn.setTextColor(getResources().getColor(R.color.Yellow) );
 				}else{
 					AudioBtn.setText("Play Audio");
 					mp.pause();
+					AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
 				}
+				
+			}
+		});
+        
+        StopBtn = (Button)findViewById(R.id.stopBtn);
+        StopBtn.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				stopMusic();
+				//iv.setVisibility(View.INVISIBLE);
 				
 			}
 		});
@@ -77,10 +102,11 @@ public class MainActivity extends Activity implements SensorEventListener {
 		{
 			double x = event.values[0];
 			//myToast("Distance Changed");
-			if(AudioBtn.getText().toString().compareTo("Stop Audio") == 0){
+			if(AudioBtn.getText().toString().compareTo("Pause Audio") == 0){
 				if(x == 0.0){
 					if(mp.isPlaying()){
 						mp.pause();
+						
 						myToast("paused");
 					}
 				}else{
@@ -90,6 +116,12 @@ public class MainActivity extends Activity implements SensorEventListener {
 			}
 		}
 		
+	}
+	public void stopMusic(){
+		mp.stop();
+		AudioBtn.setText("Play Audio");
+		AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
+		//iv.setImageResource(0);
 	}
     
 	private void sensorReg(){

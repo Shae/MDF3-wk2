@@ -13,6 +13,35 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="12dp"
         android:text="Play Audio"
+        android:textColor="@color/Green"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:typeface="sans"
+        tools:ignore="HardcodedText" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:adjustViewBounds="true"
+        android:contentDescription="Album Cover"
+        android:src="@drawable/album_art"
+        tools:ignore="HardcodedText" />
+
+    <Button
+        android:id="@+id/stopBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="43dp"
+        android:text="Stop Audio Service"
+        android:textColor="@color/Red"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:typeface="sans"
         tools:ignore="HardcodedText" />
 
 </RelativeLayout>
