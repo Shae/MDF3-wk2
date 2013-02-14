@@ -7,11 +7,16 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
+import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Messenger;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.content.res.Resources;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -30,10 +35,12 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private SensorManager sensorManager;
 	private Sensor proximitySensor;
 	ImageView iv;
-
+	private final int VIB_NOTE_ID = 1;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
         
         requestWindowFeature(Window.FEATURE_NO_TITLE);
       	getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -62,13 +69,17 @@ public class MainActivity extends Activity implements SensorEventListener{
 					//iv.setImageResource(R.drawable.album_art);
 					mp.start();
 					AudioBtn.setTextColor(getResources().getColor(R.color.Yellow) );
+					notifyMe();
 				}else{
 					AudioBtn.setText("Play Audio");
 					mp.pause();
 					AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
+					notifyMe();
 				}
 				
 			}
+			
+			
 		});
         
         StopBtn = (Button)findViewById(R.id.stopBtn);
@@ -92,7 +103,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
+		
 		
 	}
 
@@ -141,6 +152,13 @@ public class MainActivity extends Activity implements SensorEventListener{
 	}
 	
 	
+	public void notifyMe(){
+		NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		Notification note = new Notification();
+		note.defaults = Notification.DEFAULT_VIBRATE;
+		nm.notify(VIB_NOTE_ID, note);
+	}
+	
 	public void myToast(String text){  // Toast Template
 		CharSequence textIN = text;
 		int duration = Toast.LENGTH_SHORT;
@@ -148,4 +166,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 		toast.setGravity(Gravity.BOTTOM, 0, 0);
 		toast.show();
 	};// end myToast
+	
+	
 }
