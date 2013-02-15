@@ -8,14 +8,17 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Vibrator;
+
 import android.provider.MediaStore;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
+
 import android.content.Context;
+
 import android.content.pm.ActivityInfo;
 import android.util.Log;
 import android.view.Gravity;
@@ -44,6 +47,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	boolean paused = false;
 	Handler mHandler = new Handler();
 	double x;
+	Context _context = this;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,26 +73,32 @@ public class MainActivity extends Activity implements SensorEventListener{
 			
 			@Override
 			public void onClick(View v) {
-				
-				
 					if(AudioBtn.getText().toString().compareTo("Play Audio") == 0){
 						mp = MediaPlayer.create(MainActivity.this, R.raw.handlebars);
 						mp.start();
 						AudioBtn.setText("Pause Audio");
 						StopBtn.setText("Stop Audio Service");
 						AudioBtn.setTextColor(getResources().getColor(R.color.Yellow) );
-						
 						notifyMe();
-					}else{
-						mp.pause();
-						AudioBtn.setText("Play Audio");
 						
-						AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
+					}else if(AudioBtn.getText().toString().compareTo("Pause Audio") == 0){
+						
+						mp.pause();
+						AudioBtn.setText("Resume Audio");
+						AudioBtn.setTextColor(getResources().getColor(R.color.LightBlue) );
+						notifyMe();
+						
+					}else if(AudioBtn.getText().toString().compareTo("Resume Audio") == 0){
+						
+						mp.start();
+						AudioBtn.setText("Pause Audio");
+						AudioBtn.setTextColor(getResources().getColor(R.color.Yellow) );
 						notifyMe();
 					}
 				
 			}
 			
+
 			
 		});
         
@@ -209,4 +219,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	};// end myToast
 	
 	
+	
+	
 }
+
