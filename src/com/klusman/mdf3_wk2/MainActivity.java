@@ -7,15 +7,15 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
-import android.os.BatteryManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Messenger;
+import android.os.Handler;
+import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.util.Log;
 import android.view.Gravity;
@@ -29,6 +29,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements SensorEventListener{
+	
+	
 	MediaPlayer mp;
 	Button AudioBtn;
 	Button StopBtn;
@@ -36,6 +38,12 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private Sensor proximitySensor;
 	ImageView iv;
 	private final int VIB_NOTE_ID = 1;
+	Uri allsongsuri = MediaStore.Audio.Media.INTERNAL_CONTENT_URI;
+	Handler handler;
+	long startTime;
+	boolean paused = false;
+	Handler mHandler = new Handler();
+	double x;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,83 +56,87 @@ public class MainActivity extends Activity implements SensorEventListener{
       	//iv.setVisibility(View.INVISIBLE);
         setContentView(R.layout.activity_main);
         
-        mp = MediaPlayer.create(MainActivity.this, R.raw.handlebars);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        sensorReg();
         
         AudioBtn = (Button) findViewById(R.id.audioBtn);
         AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
 
+        sensorReg();
+        
         
         AudioBtn.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				if(AudioBtn.getText().toString().compareTo("Play Audio") == 0){
-					AudioBtn.setText("Pause Audio");
-					//iv.setVisibility(View.VISIBLE);
-					//Resources res = getResources(); /** from an Activity */
-					//iv.setImageDrawable(res.getDrawable(R.drawable.album_art));
-					//iv.setImageResource(R.drawable.album_art);
-					mp.start();
-					AudioBtn.setTextColor(getResources().getColor(R.color.Yellow) );
-					notifyMe();
-				}else{
-					AudioBtn.setText("Play Audio");
-					mp.pause();
-					AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
-					notifyMe();
-				}
+				
+				
+					if(AudioBtn.getText().toString().compareTo("Play Audio") == 0){
+						mp = MediaPlayer.create(MainActivity.this, R.raw.handlebars);
+						mp.start();
+						AudioBtn.setText("Pause Audio");
+						StopBtn.setText("Stop Audio Service");
+						AudioBtn.setTextColor(getResources().getColor(R.color.Yellow) );
+						
+						notifyMe();
+					}else{
+						mp.pause();
+						AudioBtn.setText("Play Audio");
+						
+						AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
+						notifyMe();
+					}
 				
 			}
 			
 			
 		});
+        
         
         StopBtn = (Button)findViewById(R.id.stopBtn);
         StopBtn.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				stopMusic();
-				//iv.setVisibility(View.INVISIBLE);
-				
+				stopMusic();	
 			}
 		});
         
     }
 
+    
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
 
+    
+    
 	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		
-		
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {	
 	}
 
+	
+	
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		if(event.sensor == proximitySensor)
 		{
-			double x = event.values[0];
-			//myToast("Distance Changed");
-			if(AudioBtn.getText().toString().compareTo("Pause Audio") == 0){
-				if(x == 0.0){
-					if(mp.isPlaying()){
-						mp.pause();
-						
-						myToast("paused");
-					}
-				}else{
-						mp.start();
-						myToast("play");
-				}
+			x = event.values[0];
+			
+
+				
+				
+			if(AudioBtn.getText().toString().compareTo("Pause Audio") == 0){ // check to see if the music SHOULD be playing at this time
+				checkProx();
+			}else{
+				
 			}
+				
+				
+
 		}
 		
 	}
@@ -132,9 +144,21 @@ public class MainActivity extends Activity implements SensorEventListener{
 		mp.stop();
 		AudioBtn.setText("Play Audio");
 		AudioBtn.setTextColor(getResources().getColor(R.color.Green) );
-		//iv.setImageResource(0);
 	}
     
+	public void runTimer() {
+		long TimeNow = System.currentTimeMillis();
+		final long EndTime = TimeNow + 5000;
+
+	      while((x == 0.0) && (EndTime >= System.currentTimeMillis() )){
+	            		
+	          if(EndTime <= System.currentTimeMillis() ){
+	          	notifyMe();
+	          	checkProx();
+	          }            		
+	      }	
+	}
+	
 	private void sensorReg(){
         /////////// PROX
         if (proximitySensor == null)
@@ -152,11 +176,28 @@ public class MainActivity extends Activity implements SensorEventListener{
 	}
 	
 	
-	public void notifyMe(){
+	public void notifyMe(){  // Haptic Vibrations for buttons
 		NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		Notification note = new Notification();
 		note.defaults = Notification.DEFAULT_VIBRATE;
+
 		nm.notify(VIB_NOTE_ID, note);
+		
+	}
+	
+	public void checkProx(){
+		if(x == 0.0){  // proximity - close
+			if(mp.isPlaying()){
+				mp.pause();
+				paused = true;
+				//runTimer();
+				myToast("paused");						
+			}
+		}else{  // proximity - far
+			mp.start();
+			paused = false;
+			myToast("play");
+		}
 	}
 	
 	public void myToast(String text){  // Toast Template
